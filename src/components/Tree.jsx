@@ -1,10 +1,10 @@
-import '../App.css';
-import Root from "./Root";
-import React from "react";
-import Node from "./Node";
+import '../App.css'
+import React from "react"
+import Node from "./Node"
 
 
 const Tree = (props) => {
+
     return <div>{props.data.map(node =>
         <Node id={node.id}
               label={node.label}
@@ -13,7 +13,7 @@ const Tree = (props) => {
               setSelectedNodeId = {props.setSelectedNodeId}
         />
 
-    )}</div>;
-};
+    )}</div>
+}
 
-export default Tree;
+export default Tree

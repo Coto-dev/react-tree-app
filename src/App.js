@@ -1,104 +1,124 @@
-import './App.css';
-import treeData from './ConstData/treeData';
-import React from "react";
-import Tree from "./components/Tree";
+import './App.css'
+import treeData from './ConstData/treeData'
+import React, {useEffect} from "react"
+import Tree from "./components/Tree"
 
 const App = () => {
-    const [selectedNodeId, setSelectedNodeId] = React.useState(null);
-    const [counter, increaseCount] = React.useState(7);
+    const [selectedNodeId, setSelectedNodeId] = React.useState(null)
+    const [tree, setTree] = React.useState(JSON.parse(JSON.stringify(treeData)))
+    const [counter, increaseCount] = React.useState(8)
     const addChildToNode = (id, childNode) => {
-        const updatedTreeData = [...treeData]
+        let updatedTreeData = JSON.parse(JSON.stringify(tree))
         const traverseAndUpdate = (nodes) => {
+            if (id === null )
+            {
+                nodes.push(childNode)
+                return
+            }
             for (let i = 0; i < nodes.length; i++) {
                 if (nodes[i].id === id) {
                     if (!nodes[i].children) {
-                        nodes[i].children = [];
+                        nodes[i].children = []
                     }
-                    nodes[i].children.push(childNode);
-                    return;
+                    nodes[i].children.push(childNode)
+                    return
                 }
 
                 if (nodes[i].children) {
-                    traverseAndUpdate(nodes[i].children);
+                    traverseAndUpdate(nodes[i].children)
                 }
-            }
-        };
-        traverseAndUpdate(updatedTreeData);
-        return updatedTreeData;
-    }
-
-    const removeNodeById = (nodes, id) => {
-        for (let i = 0; i < nodes.length; i++) {
-            if (nodes[i].id === id) {
-                nodes.splice(i, 1); // Удаляем узел из массива, если найден
-                return;
-            }
-
-            if (nodes[i].children) {
-                removeNodeById(nodes[i].children, id); // Рекурсивный вызов для удаления в дочерних элементах
             }
         }
-    };
-    const editNode = (id, name) => {
-        const updatedTreeData = [...treeData]
-        const traverseAndUpdate = (nodes) => {
+        traverseAndUpdate(updatedTreeData)
+        setTree(updatedTreeData)
+    }
+
+    const removeNodeById = (id) => {
+        let updatedTreeData = JSON.parse(JSON.stringify(tree))
+        const traverseAndDelete = (nodes) => {
             for (let i = 0; i < nodes.length; i++) {
                 if (nodes[i].id === id) {
-                    if (!nodes[i].children) {
-                        nodes[i].children = [];
-                    }
-                    nodes[i].label = name;
-                    return;
+                    nodes.splice(i, 1)
+                    return
                 }
 
                 if (nodes[i].children) {
-                    traverseAndUpdate(nodes[i].children);
+                    traverseAndDelete(nodes[i].children)
                 }
             }
-        };
-        traverseAndUpdate(updatedTreeData);
-        return updatedTreeData;
+        }
+        traverseAndDelete(updatedTreeData)
+        setSelectedNodeId(null)
+        setTree(updatedTreeData)
+    }
+    const editNode = (id, name) => {
+        let updatedTreeData = JSON.parse(JSON.stringify(tree))
+        const traverseAndUpdate = (nodes) => {
+            for (let i = 0; i < nodes.length; i++) {
+                if (nodes[i].id === id) {
+                    nodes[i].label = name
+                    return
+                }
+
+                if (nodes[i].children) {
+                    traverseAndUpdate(nodes[i].children)
+                }
+            }
+        }
+        traverseAndUpdate(updatedTreeData)
+        setTree(updatedTreeData)
     }
     const onButtonAddClick = () => {
         const newNode = {
-            id : {counter},
+            id : counter,
             label: 'New Node',
-        };
-        addChildToNode(selectedNodeId, newNode);
+        }
+        addChildToNode(selectedNodeId, newNode)
         increaseCount(counter+1)
-    };
+    }
     const onButtonDeleteClick = () => {
-        const updatedTreeData = removeNodeById(treeData,selectedNodeId);
-    };
+         removeNodeById(selectedNodeId)
+    }
     const onButtonEditClick = () => {
        let name = prompt("New name :")
-       editNode(selectedNodeId,name);
-    };
+       name = name.trim().length == 0 ? "default name" : name
+        editNode(selectedNodeId,name)
+    }
     const onButtonReset = () => {
-        let name = prompt("New name :")
-        editNode(selectedNodeId,name);
-    };
+        setTree(treeData)
+        setSelectedNodeId(null)
 
+    }
+    const handleOutClick = (event) => {
+        if (event.target.className === "container") {
+            setSelectedNodeId(null)
+        }
+    }
+
+    useEffect(() => {
+        document.addEventListener("click", handleOutClick)
+    })
     return (
         <div>
             <div className="container">
                 <div className="tree">
                     <div className="header">Tree</div>
-                    <Tree data={treeData}
+
+                    <Tree data={tree}
                           selectedNodeId ={selectedNodeId}
                           setSelectedNodeId={setSelectedNodeId}
                     />
                     <div className="buttons">
                         <button className="btn" type="button" onClick={onButtonAddClick}>Add</button>
-                        <button className="btn" type="button" onClick={onButtonDeleteClick}>Remove</button>
-                        <button className="btn" type="button" onClick={onButtonEditClick}>Edit</button>
+                        <button className="btn" type="button" disabled={selectedNodeId===null} onClick={onButtonDeleteClick}>Remove</button>
+                        <button className="btn" type="button" disabled={selectedNodeId===null} onClick={onButtonEditClick}>Edit</button>
                         <button className="btn" type="button" onClick={onButtonReset}>Reset</button>
                     </div>
                 </div>
             </div>
         </div>
-    );
+    )
 
 }
 
-export default App;
+export default App
